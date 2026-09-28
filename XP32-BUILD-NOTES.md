@@ -140,10 +140,19 @@ exe 瘦身剩余手段：LTO（跨 TU 去重模板，重建+链接变慢但体�
 
 ## 6. 当前状态
 
+- **仓库已重构**：分支 `xp32` = 官方 `mame0289` tag + 单个精简提交（2955f67f，树中
+  无 build/）；原 master 历史（含全部 build blob）已删除，完整备份在
+  `G:\EmuSrc\mame-master-backup.bundle`（`git clone` 该文件可整体还原）。
+- .git 从 317MB 瘦到 **219MB**；`build\`（G: 417MB）与 `rdisk\`、`tinymame.exe`、
+  `mametinymame.map` 均在 `.git/info/exclude` 忽略清单中，未跟踪。
+- **已推送**：`git push origin xp32 --no-tags` 完成（45.58 KiB，内容寻址去重）。
+  提交差异 = 26210 删除 + 37 修改 + 6 新增；37 个修改经 `--ignore-cr-at-eol`
+  逐文件判定**全部为真实 XP32 补丁**（无行尾噪音），GitHub 的 25000 文件
+  显示以删除为主，属精简本体，无需重写历史。
 - src/ 和 3rdparty/ 未读文件 **归零**（扫描确认），源码全部是构建实际读取的。
-- 工作树 835MB（含 .git 334MB）：src 196MB、3rdparty 42MB。
-- 渲染 D3D9(HLSL)/OpenGL/GDI；声音 DirectSound；调试器 win/gdbstub。
-- 所有修改未提交；建议先 `git add -A && git commit` 打一个检查点再继续实验。
+- 工作树 835MB（含 .git 219MB）：src 196MB、3rdparty 42MB。
+- 渲染 D3D9(HLSL)/OpenGL/GDI；声音 DirectSound（audio_latency 须为 0/0.1）；
+  调试器 win/gdbstub。
 
 ## 7. 常用操作速查
 
