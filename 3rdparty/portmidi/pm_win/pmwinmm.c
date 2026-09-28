@@ -418,7 +418,7 @@ static void report_hosterror(LPWCH error_msg)
         /* add explanation to Window's confusing error message */
         /* if there's room: */
         if (PM_HOST_ERROR_MSG_LEN - strlen(pm_hosterror_text) > 60) {
-            strcat_s(pm_hosterror_text, PM_HOST_ERROR_MSG_LEN,
+            strcat(pm_hosterror_text,
                      " Probably this MIDI device is open "
                      "in another application.");
         }

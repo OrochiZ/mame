@@ -176,7 +176,7 @@ public:
 		{
 			xinput_detect_failed = true;
 			xinput_deviceids.clear();
-			osd_printf_warning("XInput device detection failed. XInput won't be used. Error: 0x%X\n", uint32_t(result));
+			//osd_printf_warning("XInput device detection failed. XInput won't be used. Error: 0x%X\n", uint32_t(result));
 		}
 
 		// Enumerate all the DirectInput joysticks and add them if they aren't XInput compatible
@@ -299,7 +299,7 @@ private:
 				IID_PPV_ARGS(pIWbemLocator.GetAddressOf()));
 		if (FAILED(hr) || !pIWbemLocator)
 		{
-			osd_printf_error("Creating WbemLocator failed. Error: 0x%X\n", static_cast<unsigned int>(hr));
+			//osd_printf_error("Creating WbemLocator failed. Error: 0x%X\n", static_cast<unsigned int>(hr));
 			return hr;
 		}
 

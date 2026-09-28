@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
 	// * No WM_POINTERLEAVE event when mouse pointer moves directly to an
 	//   overlapping window from the same process.
 	// * Still receive occasional WM_MOUSEMOVE events.
-	EnableMouseInPointer(FALSE);
+	//EnableMouseInPointer(FALSE);
 
 	// initialize common controls
 	InitCommonControls();

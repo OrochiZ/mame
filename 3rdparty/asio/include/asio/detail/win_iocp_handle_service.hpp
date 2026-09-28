@@ -368,7 +368,7 @@ private:
   class iocp_op_cancellation : public operation
   {
   public:
-    iocp_op_cancellation(HANDLE h, operation* target)
+    HANDLE handle_; iocp_op_cancellation(HANDLE h, operation* target)
       : operation(&iocp_op_cancellation::do_complete),
         handle_(h),
         target_(target)
@@ -385,7 +385,7 @@ private:
 
     void operator()(cancellation_type_t type)
     {
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       if (!!(type &
             (cancellation_type::terminal
               | cancellation_type::partial
@@ -393,13 +393,13 @@ private:
       {
         ::CancelIoEx(handle_, this);
       }
-#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       (void)type;
-#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
     }
 
   private:
-    HANDLE handle_;
+    //HANDLE handle_;
     operation* target_;
   };
 

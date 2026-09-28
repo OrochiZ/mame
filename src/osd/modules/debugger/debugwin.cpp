@@ -175,9 +175,9 @@ void debugger_windows::wait_for_debugger(device_t &device, bool firststop)
 			if (GetMonitorInfo(nearest_monitor, &info))
 			{
 				UINT xdpi = 96, ydpi = 96;
-				GetDpiForMonitor(nearest_monitor, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
+				//GetDpiForMonitor(nearest_monitor, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
 				m_next_window_pos.x = info.rcWork.left + MulDiv(100, xdpi, 96);
-				m_next_window_pos.y = info.rcWork.top + MulDiv(100, xdpi, 96);
+				m_next_window_pos.y = info.rcWork.top + MulDiv(100, ydpi, 96);
 				m_window_start_x = m_next_window_pos.x;
 			}
 		}
@@ -349,7 +349,7 @@ void debugger_windows::stagger_window(HWND window, int width, int height)
 	target.top = 0;
 	target.right = width;
 	target.bottom = height;
-	if (!AdjustWindowRectExForDpi(&target, GetWindowLong(window, GWL_STYLE), GetMenu(window) ? TRUE : FALSE, GetWindowLong(window, GWL_EXSTYLE), GetDpiForWindow(window)))
+	if (!AdjustWindowRectEx(&target, GetWindowLong(window, GWL_STYLE), GetMenu(window) ? TRUE : FALSE, GetWindowLong(window, GWL_EXSTYLE)))
 	{
 		// really shouldn't end up here, but have to do something
 		SetWindowPos(window, HWND_TOP, m_next_window_pos.x, m_next_window_pos.y, width, height, SWP_SHOWWINDOW);
@@ -363,7 +363,7 @@ void debugger_windows::stagger_window(HWND window, int width, int height)
 	HMONITOR const mon = MonitorFromPoint(m_next_window_pos, MONITOR_DEFAULTTONEAREST);
 	UINT xdpi = 96, ydpi = 96;
 	if (mon)
-		GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
+		//GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
 	if (mon)
 	{
 		MONITORINFO info;

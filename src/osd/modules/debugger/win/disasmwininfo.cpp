@@ -69,7 +69,7 @@ void disasmwin_info::recompute_children()
 	bounds.top = bounds.left = 0;
 	bounds.right = m_views[expression_view_index()]->prefwidth() + (2 * EDGE_WIDTH);
 	bounds.bottom = (metrics().debug_font_ascent() * 16) + metrics().hscroll_height();
-	AdjustWindowRectExForDpi(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX, metrics().dpi());
+	AdjustWindowRectEx(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX);
 
 	// clamp the min/max size
 	set_maxwidth(bounds.right - bounds.left);

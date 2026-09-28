@@ -71,8 +71,8 @@ void ui_metrics::set_dpi(UINT dpi)
 	m_debug_font_width = 0;
 	m_debug_font_ascent = 0;
 
-	m_hscroll_height = GetSystemMetricsForDpi(SM_CYHSCROLL, dpi),
-	m_vscroll_width = GetSystemMetricsForDpi(SM_CXVSCROLL, dpi);
+	m_hscroll_height = GetSystemMetrics(SM_CYHSCROLL),
+	m_vscroll_width = GetSystemMetrics(SM_CXVSCROLL);
 
 	// create a temporary DC
 	HDC const temp_dc = GetDC(nullptr);

@@ -72,13 +72,13 @@ debugwin_info::debugwin_info(debugger_windows_interface &debugger, bool is_main_
 	if (!m_wnd)
 		return;
 
-	m_metrics.set_dpi(GetDpiForWindow(m_wnd));
+	m_metrics.set_dpi(96);
 
 	RECT bounds;
 	bounds.top = bounds.left = 0;
 	bounds.right = (metrics().debug_font_width() * 32) + metrics().vscroll_width();
 	bounds.bottom = (metrics().debug_font_ascent() * 16) + metrics().hscroll_height();
-	AdjustWindowRectExForDpi(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX, metrics().dpi());
+	AdjustWindowRectEx(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX);
 	set_minwidth(bounds.right - bounds.left);
 	set_minheight(bounds.bottom - bounds.top);
 
@@ -327,7 +327,7 @@ void debugwin_info::restore_configuration_from_node(util::xml::data_node const &
 	desired.right = desired.left + node.get_attribute_int(ATTR_WINDOW_WIDTH, bounds.right);
 	desired.bottom = desired.top + node.get_attribute_int(ATTR_WINDOW_HEIGHT, bounds.bottom);
 	// TODO: sanity checks...
-	if (!AdjustWindowRectExForDpi(&desired, DEBUG_WINDOW_STYLE, GetMenu(window()) ? TRUE : FALSE, DEBUG_WINDOW_STYLE_EX, metrics().dpi()))
+	if (!AdjustWindowRectEx(&desired, DEBUG_WINDOW_STYLE, GetMenu(window()) ? TRUE : FALSE, DEBUG_WINDOW_STYLE_EX))
 		return;
 
 	// actually move the window
@@ -403,7 +403,7 @@ void debugwin_info::recompute_children()
 		bounds.top = bounds.left = 0;
 		bounds.right = m_views[0]->prefwidth() + (2 * EDGE_WIDTH);
 		bounds.bottom = (metrics().debug_font_ascent() * 16) + metrics().hscroll_height();
-		AdjustWindowRectExForDpi(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX, metrics().dpi());
+		AdjustWindowRectEx(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX);
 
 		// clamp the min/max size
 		set_maxwidth(bounds.right - bounds.left);
@@ -616,12 +616,12 @@ LRESULT debugwin_info::window_proc(UINT message, WPARAM wparam, LPARAM lparam)
 	case WM_DPICHANGED:
 		{
 			auto const suggested = reinterpret_cast<RECT const *>(lparam);
-			m_metrics.set_dpi(GetDpiForWindow(m_wnd));
+			m_metrics.set_dpi(96);
 			RECT bounds;
 			bounds.top = bounds.left = 0;
 			bounds.right = (metrics().debug_font_width() * 32) + metrics().vscroll_width();
 			bounds.bottom = (metrics().debug_font_ascent() * 16) + metrics().hscroll_height();
-			AdjustWindowRectExForDpi(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX, metrics().dpi());
+			AdjustWindowRectEx(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX);
 			set_minwidth(bounds.right - bounds.left);
 			set_minheight(bounds.bottom - bounds.top);
 			update_dpi();

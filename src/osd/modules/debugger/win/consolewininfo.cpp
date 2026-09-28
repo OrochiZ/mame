@@ -160,7 +160,7 @@ void choose_image(device_image_interface &device, HWND owner, REFCLSID class_id,
 			// FIXME: strip off archive names - opening a file inside an archive decompresses it to a temporary location
 			std::wstring wfull = osd::text::to_wstring(full);
 			Microsoft::WRL::ComPtr<IShellItem> item;
-			if (SUCCEEDED(SHCreateItemFromParsingName(wfull.c_str(), nullptr, IID_PPV_ARGS(&item))))
+//			if (SUCCEEDED(SHCreateItemFromParsingName(wfull.c_str(), nullptr, IID_PPV_ARGS(&item))))
 			{
 				//dialog->SetFolder(item); disabled until
 			}
@@ -193,6 +193,7 @@ void choose_image(device_image_interface &device, HWND owner, REFCLSID class_id,
 
 	if (!SUCCEEDED(hr))
 	{
+#ifdef UNUSED_FUNCTION
 		int pressed;
 		TaskDialog(
 				owner,
@@ -203,6 +204,7 @@ void choose_image(device_image_interface &device, HWND owner, REFCLSID class_id,
 				TDCBF_OK_BUTTON,
 				TD_ERROR_ICON,
 				&pressed);
+#endif
 	}
 }
 
@@ -565,7 +567,7 @@ void consolewin_info::adjust_minmax()
 	bounds.top = bounds.left = 0;
 	bounds.right = EDGE_WIDTH + m_views[VIEW_IDX_STATE]->maxwidth() + (2 * EDGE_WIDTH) + (metrics().debug_font_width() * 32) + metrics().vscroll_width() + EDGE_WIDTH;
 	bounds.bottom = (metrics().debug_font_ascent() * 24) + (metrics().hscroll_height() * 2);
-	AdjustWindowRectExForDpi(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX, metrics().dpi());
+	AdjustWindowRectEx(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX);
 	set_minwidth(bounds.right - bounds.left);
 	set_minheight(bounds.bottom - bounds.top);
 
@@ -576,7 +578,7 @@ void consolewin_info::adjust_minmax()
 			(2 * EDGE_WIDTH) +
 			std::max(m_views[VIEW_IDX_DISASM]->maxwidth(), m_views[VIEW_IDX_CONSOLE]->maxwidth()) +
 			EDGE_WIDTH;
-	AdjustWindowRectExForDpi(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX, metrics().dpi());
+	AdjustWindowRectEx(&bounds, DEBUG_WINDOW_STYLE, FALSE, DEBUG_WINDOW_STYLE_EX);
 	set_maxwidth(bounds.right - bounds.left);
 }
 
