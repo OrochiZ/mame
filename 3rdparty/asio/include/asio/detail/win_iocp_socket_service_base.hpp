@@ -648,7 +648,7 @@ protected:
   class iocp_op_cancellation : public operation
   {
   public:
-    iocp_op_cancellation(SOCKET s, operation* target)
+    SOCKET socket_; iocp_op_cancellation(SOCKET s, operation* target)
       : operation(&iocp_op_cancellation::do_complete),
         socket_(s),
         target_(target)
@@ -665,7 +665,7 @@ protected:
 
     void operator()(cancellation_type_t type)
     {
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       if (!!(type &
             (cancellation_type::terminal
               | cancellation_type::partial
@@ -674,13 +674,13 @@ protected:
         HANDLE sock_as_handle = reinterpret_cast<HANDLE>(socket_);
         ::CancelIoEx(sock_as_handle, this);
       }
-#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       (void)type;
-#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
     }
 
   private:
-    SOCKET socket_;
+    //SOCKET socket_;
     operation* target_;
   };
 
@@ -688,7 +688,7 @@ protected:
   class accept_op_cancellation : public operation
   {
   public:
-    accept_op_cancellation(SOCKET s, operation* target)
+    SOCKET socket_; accept_op_cancellation(SOCKET s, operation* target)
       : operation(&iocp_op_cancellation::do_complete),
         socket_(s),
         target_(target),
@@ -711,7 +711,7 @@ protected:
 
     void operator()(cancellation_type_t type)
     {
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       if (!!(type &
             (cancellation_type::terminal
               | cancellation_type::partial
@@ -720,13 +720,13 @@ protected:
         HANDLE sock_as_handle = reinterpret_cast<HANDLE>(socket_);
         ::CancelIoEx(sock_as_handle, this);
       }
-#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       (void)type;
-#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
     }
 
   private:
-    SOCKET socket_;
+    //SOCKET socket_;
     operation* target_;
     long cancel_requested_;
   };
@@ -735,7 +735,7 @@ protected:
   class reactor_op_cancellation : public operation
   {
   public:
-    reactor_op_cancellation(SOCKET s, operation* base)
+    SOCKET socket_; reactor_op_cancellation(SOCKET s, operation* base)
       : operation(&reactor_op_cancellation::do_complete),
         socket_(s),
         target_(base),
@@ -775,16 +775,16 @@ protected:
         }
         else
         {
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
           HANDLE sock_as_handle = reinterpret_cast<HANDLE>(socket_);
           ::CancelIoEx(sock_as_handle, this);
-#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
         }
       }
     }
 
   private:
-    SOCKET socket_;
+    //SOCKET socket_;
     operation* target_;
     select_reactor* reactor_;
     select_reactor::per_descriptor_data* reactor_data_;

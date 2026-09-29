@@ -159,7 +159,7 @@ void choose_image(device_image_interface &device, HWND owner, REFCLSID class_id,
 			// FIXME: strip off archive names - opening a file inside an archive decompresses it to a temporary location
 			std::wstring wfull = osd::text::to_wstring(full);
 			Microsoft::WRL::ComPtr<IShellItem> item;
-			if (SUCCEEDED(SHCreateItemFromParsingName(wfull.c_str(), nullptr, IID_PPV_ARGS(&item))))
+//			if (SUCCEEDED(SHCreateItemFromParsingName(wfull.c_str(), nullptr, IID_PPV_ARGS(&item))))
 			{
 				//dialog->SetFolder(item); disabled until
 			}
@@ -192,6 +192,7 @@ void choose_image(device_image_interface &device, HWND owner, REFCLSID class_id,
 
 	if (!SUCCEEDED(hr))
 	{
+#ifdef UNUSED_FUNCTION
 		int pressed;
 		TaskDialog(
 				owner,
@@ -202,6 +203,7 @@ void choose_image(device_image_interface &device, HWND owner, REFCLSID class_id,
 				TDCBF_OK_BUTTON,
 				TD_ERROR_ICON,
 				&pressed);
+#endif
 	}
 }
 

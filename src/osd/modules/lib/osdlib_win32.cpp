@@ -113,6 +113,10 @@ void osd_break_into_debugger(const char *message)
 
 std::pair<std::error_condition, unsigned> osd_get_cache_line_size() noexcept
 {
+	SYSTEM_INFO sysInfo; GetSystemInfo(&sysInfo);
+	unsigned default_cache_line_size = 64;
+	return std::make_pair(std::errc::operation_not_permitted, default_cache_line_size);
+
 	DWORD resultsize = 0;
 	if (GetLogicalProcessorInformation(nullptr, &resultsize) || (ERROR_INSUFFICIENT_BUFFER != GetLastError()) || !resultsize)
 		return std::make_pair(std::errc::operation_not_permitted, 0U);
