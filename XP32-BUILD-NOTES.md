@@ -110,9 +110,8 @@ imgui 源码也在 bgfx 树里）。
   （compressor/eq/filter/reverb）+ UI 10 个文件。
   - **核心不摘**：混音图深度耦合，拔除等于重写 mixer，风险不成比例；
     默认禁用时效果链为直通，无运行代价。
-  - **UI 已摘**：删 ui/audiomix、ui/audioeffects、ui/audio_effect_{compressor,eq,filter}
-    共 10 文件；mainmenu.cpp 去 include/枚举/菜单项/dispatch；frontend.lua 去文件表。
-    "Audio Mix"/"Audio Effects" 菜单彻底消失。
+  - **UI 已恢复**（避免自欺欺人：核心在而藏 UI 属半吊子；要根治=混音器重写，
+    见上面"核心不摘"），Audio Mix / Audio Effects 菜单照常可用。
 - `STRIP_SYMBOLS = 1` 已启用（makefile），链接后自动剥离符号，
   exe 74→54MB；手工剥离可用 `mingw32\bin\strip.exe tinymame.exe`。
 
@@ -153,6 +152,44 @@ exe 瘦身剩余手段：LTO（跨 TU 去重模板，重建+链接变慢但体�
 - 工作树 835MB（含 .git 219MB）：src 196MB、3rdparty 42MB。
 - 渲染 D3D9(HLSL)/OpenGL/GDI；声音 DirectSound（audio_latency 须为 0/0.1）；
   调试器 win/gdbstub。
+
+## 6.1 驱动组队（cps1/cps2/cps3/fcrash/neogeo/pgm/pgm2）
+
+当前 `SOURCES=cps1,cps2,cps3,fcrash,cps1bl_5205,cps1bl_pic,neogeo,pgm,pgm2`
+（9 源），**1117 个驱动**编入。cps1bl_5205/pic = **CPS1 盗版专用文件**（5205 音频
+DMA / PIC16C57 保护，游戏自带：sf2ceb×5、sf2mdt×3、dinopic×3、punipic×3、
+wofpic、knightsb、captcommb2、jurassic99…）；snk6502（1981 Vanguard 时代，
+拖着离散音频大坑）已剔除。
+
+换驱动集的流程与机制（重要）：
+1. 从 mame0289 tag 恢复驱动源：`git checkout mame0289 -- <路径>`；
+2. 改 SOURCES 后**必须 REGENIE=1**（改 SOURCES 不会自动触发工程再生成）；
+3. makedep 在 genie 时扫描驱动的 `#include` 决定设备集——头文件缺失 =
+   对应设备不进工程 = 链接期 undefined symbol。恢复时 cpp/h 成对恢复；
+4. 链接错误逐个补，本轮共恢复 ~160 文件：bus/neogeo + bus/neogeo_ctrl 全目录、
+   cpu/{arm7,sh,mcs51}、sound/{ymopn,ics2115,ymz770,mpeg_audio,cdda,ay8910}、
+   machine/{watchdog,alpha_8921,vic_pl192,gt913_io,gt913_kbd,gt913_snd,upd1990a,
+   input_merger,74259,v3021,atmel_arm_aic,timer,nscsi_bus,nscsi_hle,nscsi_cb,
+   intelfsh}、mame/igs/{igs022,igs023_video,igs025,igs028,igs036crypt}、
+   capcom/{cps2*,cps3*,cps3_a*,fcrash*}、snk/ng_memcard；
+5. nscsi 已裁最小集：bus.lua 只留 cd/devices/hd；devices.cpp 重写为仅
+   cdrom/cdrom_2x/harddisk 三选项——applecd/cdd2000 等每台光驱内嵌不同家的
+   单片机（mcs51/m6502/h8/m37710），全部剔除，CPS3 只用 nscsi_cd。
+
+### CPS3 性能课题（已结案）
+
+CPS3 32 位上限 80%（其他 0.289 XP32 构建只有 45%），旧版 MAME 构建可达 800%：
+
+- 根因：CPS3 的 SH2 用 UML 式 DRC，后端在 0.289 只剩 drcbec（便携解释）+
+  drcbex64（原生 x64）——**32 位 x86 原生后端 drcbex86 已被官方删除**（约 0.25x
+  时代），32 位构建的 SH2 只能走 drcbec 慢速通道，比原生慢约一个数量级；
+- `-drc`/`-nodrc` 选项也随 32 位后端一起被移除（emuopts.cpp 零命中），
+  DRC 启用现在是设备内部自动决定，用户层无开关；
+- 实测横向：本构建 80% > RetroDan UART 同补丁构建 45%（其 GCC vs 本 clang
+  -O3，编译器差距约 1.8 倍）——本构建已是已知 0.289 时代 XP32 中 CPS3 最快；
+- 旧版 800% 的构建基于还有 drcbex86 的旧官方版（约 <=0.25x）；
+- 可行出路：a) Win10 x64 上另编 PTR64=1 变体（drcbex64 原生，CPS3 全速）；
+  b) XP32 上并存一个旧版 MAME 专跑 CPS3；c) 接受现状（32 位 0.289 无解）。
 
 ## 7. 常用操作速查
 

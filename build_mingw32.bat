@@ -22,9 +22,12 @@ rem   (makefile line 93) -> target windows_x86_clang (32-bit clang build).
 rem
 rem Usage:
 rem   build_mingw32.bat
-rem       (default: make SUBTARGET=tinymame SOURCES=src/mame/capcom/cps1.cpp)
+rem       (default: tinymame, 9 driver sources = cps1/cps2/cps3/fcrash/
+rem        cps1bl_5205/cps1bl_pic/neogeo/pgm/pgm2, 1117 drivers)
 rem   build_mingw32.bat -j4
-rem   build_mingw32.bat SUBTARGET=tinymame SOURCES=src/mame/capcom/cps1.cpp -j4
+rem   build_mingw32.bat REGENIE=1 SUBTARGET=tinymame SOURCES=<cpp list> -j4
+rem   (REGENIE=1 is REQUIRED after changing SOURCES, or project makefiles
+rem    won't be regenerated)
 rem =====================================================================
 
 setlocal
@@ -39,9 +42,9 @@ if not exist "%MAKE_EXE%" (
 rem --- same as mingw32.exe: preset MSYSTEM, let /etc/profile do the rest ---
 set "MSYSTEM=MINGW32"
 
-rem --- default make args (same command as the last build) ---
+rem --- default make args (9-source driver team; see XP32-BUILD-NOTES.md 6.1) ---
 set "MAKE_ARGS=%*"
-if "%MAKE_ARGS%"=="" set "MAKE_ARGS=SUBTARGET=tinymame SOURCES=src/mame/capcom/cps1.cpp -j3"
+if "%MAKE_ARGS%"=="" set "MAKE_ARGS=SUBTARGET=tinymame SOURCES=src/mame/capcom/cps1.cpp,src/mame/capcom/cps2.cpp,src/mame/capcom/cps3.cpp,src/mame/capcom/fcrash.cpp,src/mame/capcom/cps1bl_5205.cpp,src/mame/capcom/cps1bl_pic.cpp,src/mame/snk/neogeo.cpp,src/mame/igs/pgm.cpp,src/mame/igs/pgm2.cpp -j3"
 
 rem --- build output location (obj/generated/projects/libs). rdisk is a
 rem     symlink -> R:\Mame (RAM disk): genie.lua line 19 CONCATS build-dir
@@ -70,4 +73,4 @@ echo.
 set "RC=%ERRORLEVEL%"
 echo.
 if "%RC%"=="0" (echo === BUILD OK ===) else (echo === BUILD FAILED, rc=%RC% ===)
-endlocal & exit /b %RC%
+endlocal & timeout -t 10 & exit /b %RC%
