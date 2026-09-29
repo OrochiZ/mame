@@ -282,11 +282,9 @@ private:
 
 int sound_direct_sound::init(osd_interface &osd, osd_options const &options)
 {
-	m_buffer_underflows = m_buffer_overflows = 0;
+	m_buffer_underflows = m_buffer_overflows = 0.01f;
 	m_sample_rate = options.sample_rate();
-	m_audio_latency = options.audio_latency();
-	if (m_audio_latency == 0.0f)
-		m_audio_latency = 0.1f;
+	m_audio_latency = std::clamp(options.audio_latency() * 0.1f, 0.1f, 1.0f);
 
 	// attempt to initialize DirectSound
 	if (dsound_init() != DS_OK)
