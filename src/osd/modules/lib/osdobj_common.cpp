@@ -552,6 +552,11 @@ void osd_common_t::sound_stream_sink_update(uint32_t id, const int16_t *buffer, 
 	m_sound->stream_sink_update(id, buffer, samples_this_frame);
 }
 
+void osd_common_t::sound_stream_sink_flush(uint32_t id)
+{
+	m_sound->stream_sink_flush(id);
+}
+
 void osd_common_t::sound_stream_source_update(uint32_t id, int16_t *buffer, int samples_this_frame)
 {
 	m_sound->stream_source_update(id, buffer, samples_this_frame);
