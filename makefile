@@ -27,12 +27,12 @@
 
 # NO_OPENGL = 0
 # USE_DISPATCH_GL = 0
-# MODERN_WIN_API = 0
+MODERN_WIN_API = 0
 # USE_SDL = 1
 # SDL_INI_PATH = .;$HOME/.mame/;ini;
 # SDL2_MULTIAPI = 1
-# NO_USE_MIDI = 1
-# NO_USE_PORTAUDIO = 1
+NO_USE_MIDI = 1
+NO_USE_PORTAUDIO = 1
 # NO_USE_PULSEAUDIO = 1
 # NO_USE_PIPEWIRE = 1
 # USE_TAPTUN = 1
@@ -90,20 +90,23 @@
 # TARGETOS = windows
 # CROSS_BUILD = 1
 # TOOLCHAIN =
-# OVERRIDE_CC = cc
-# OVERRIDE_CXX = c++
+OVERRIDE_CC = clang
+OVERRIDE_CXX = clang++
+# link with lld (from mingw64/bin, added to PATH by build_mingw32.bat);
+# much faster than GNU ld and no duplicate-section warnings
+LDOPTS = -fuse-ld=lld
 # OVERRIDE_LD = ld
 # OVERRIDE_AR = ar
 
 # DEPRECATED = 0
 # LTO = 1
-# SSE2 = 1
+SSE2 = 1
 # OPENMP = 1
 
 # SEPARATE_BIN = 1
 # PYTHON_EXECUTABLE = python3
 # SHADOW_CHECK = 1
-# STRIP_SYMBOLS = 0
+STRIP_SYMBOLS = 1
 
 # QT_HOME = /usr/lib64/qt48/
 
