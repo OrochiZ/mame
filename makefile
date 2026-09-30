@@ -14,8 +14,8 @@
 
 # REGENIE = 1
 # VERBOSE = 1
-# NOWERROR = 1
-# IGNORE_GIT = 1
+NOWERROR = 1
+IGNORE_GIT = 1
 
 # TARGET = mame
 # SUBTARGET = tiny
