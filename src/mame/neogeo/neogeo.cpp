@@ -614,6 +614,8 @@ public:
 	// fixed software configurations
 	void neobase(machine_config &config);
 	void neobase_oro(machine_config &config); // Oro: neobase with on-demand sprite decoding
+	void kof2000s_oro(machine_config &config); // Oro: kof2000s - cmc50 cart key 0x50
+	void kof2001s_oro(machine_config &config); // Oro: kof2001s/kf2k1ae - cmc50 cart key 0x42
 	void neods(machine_config &config);   // Oro: dual sound hack board (kof98ds)
 	void neo4s(machine_config &config);   // Oro: quad sound hack board (music4 add)
 	void neoext(machine_config &config);  // Oro: quad sound hack board, comm at 0x321xxx (kof97ext)
@@ -1425,8 +1427,12 @@ void neogeo_base_state::set_slot_idx(int slot)
 		m_audiocpu->reset(); // svc have no sound if in higher slots without this?
 
 		// Oro: extended P ROM window + comm ports + extra audio units for hack boards
-		if (m_slots[m_curr_slot] && m_slots[m_curr_slot]->get_rom_size() > 0x900000)
-			space.install_rom(0x900000, 0xbfffff, (uint16_t *)m_slots[m_curr_slot]->get_rom_base() + 0x900000/2);
+		{
+			uint32_t const romsz = (m_slots[m_curr_slot] ? m_slots[m_curr_slot]->get_rom_size() : 0);
+			logerror("Oro: cart rom_size=%08X, 0x900000-0xbfffff window %s\n", romsz, (romsz > 0x900000) ? "installed" : "skipped");
+			if (romsz > 0x900000)
+				space.install_rom(0x900000, 0xbfffff, (uint16_t *)m_slots[m_curr_slot]->get_rom_base() + 0x900000/2);
+		}
 
 		if (m_audiocpu2.found())
 		{
@@ -2339,15 +2345,15 @@ void mvs_led_state::neods(machine_config &config)
 	audiocpu2x.set_addrmap(AS_PROGRAM, &mvs_led_state::audio_map_2);
 	audiocpu2x.set_addrmap(AS_IO, &mvs_led_state::audio_io_map_2);
 
-	GENERIC_LATCH_8(config, "sndcmd2").data_pending_callback().set_inputline("audiocpu2", INPUT_LINE_NMI);
+	GENERIC_LATCH_8(config, "sndcmd2").data_pending_callback().set_inputline(m_audiocpu2, INPUT_LINE_NMI);
 	GENERIC_LATCH_8(config, "sndres2");
 
 	ym2610_device &ymsnd2x = YM2610(config, "ymsnd2", NEOGEO_YM2610_CLOCK);
-	ymsnd2x.irq_handler().set_inputline("audiocpu2", 0);
-	ymsnd2x.add_route(0, "lspeaker", 0.84);
-	ymsnd2x.add_route(0, "rspeaker", 0.84);
-	ymsnd2x.add_route(1, "lspeaker", 0.98);
-	ymsnd2x.add_route(2, "rspeaker", 0.98);
+	ymsnd2x.irq_handler().set_inputline(m_audiocpu2, 0);
+	ymsnd2x.add_route(0, "speaker", 0.84, 0);
+	ymsnd2x.add_route(0, "speaker", 0.84, 1);
+	ymsnd2x.add_route(1, "speaker", 0.98, 0);
+	ymsnd2x.add_route(2, "speaker", 0.98, 1);
 }
 
 // Oro: quad sound hack board (music4 add): three extra Z80 + YM2610, 4x overclock
@@ -2368,31 +2374,35 @@ void mvs_led_state::neo4s(machine_config &config)
 		std::string restag = std::string("sndres") + suffix;
 
 		z80_device &audiocpux = Z80(config, cputag.c_str(), NEOGEO_AUDIO_CPU_CLOCK);
+		optional_device<cpu_device> *cpufinder;
 		if (!strcmp(suffix, "_m2"))
 		{
 			audiocpux.set_addrmap(AS_PROGRAM, &mvs_led_state::audio_map_m2);
 			audiocpux.set_addrmap(AS_IO, &mvs_led_state::audio_io_map_m2);
+			cpufinder = &m_audiocpu_m2;
 		}
 		else if (!strcmp(suffix, "_m3"))
 		{
 			audiocpux.set_addrmap(AS_PROGRAM, &mvs_led_state::audio_map_m3);
 			audiocpux.set_addrmap(AS_IO, &mvs_led_state::audio_io_map_m3);
+			cpufinder = &m_audiocpu_m3;
 		}
 		else
 		{
 			audiocpux.set_addrmap(AS_PROGRAM, &mvs_led_state::audio_map_m4);
 			audiocpux.set_addrmap(AS_IO, &mvs_led_state::audio_io_map_m4);
+			cpufinder = &m_audiocpu_m4;
 		}
 
-		GENERIC_LATCH_8(config, cmdtag.c_str()).data_pending_callback().set_inputline(cputag.c_str(), INPUT_LINE_NMI);
+		GENERIC_LATCH_8(config, cmdtag.c_str()).data_pending_callback().set_inputline(*cpufinder, INPUT_LINE_NMI);
 		GENERIC_LATCH_8(config, restag.c_str());
 
 		ym2610_device &ymsndx = YM2610(config, ymtag.c_str(), NEOGEO_YM2610_CLOCK);
-		ymsndx.irq_handler().set_inputline(cputag.c_str(), 0);
-		ymsndx.add_route(0, "lspeaker", 0.84);
-		ymsndx.add_route(0, "rspeaker", 0.84);
-		ymsndx.add_route(1, "lspeaker", 0.98);
-		ymsndx.add_route(2, "rspeaker", 0.98);
+		ymsndx.irq_handler().set_inputline(*cpufinder, 0);
+		ymsndx.add_route(0, "speaker", 0.84, 0);
+		ymsndx.add_route(0, "speaker", 0.84, 1);
+		ymsndx.add_route(1, "speaker", 0.98, 0);
+		ymsndx.add_route(2, "speaker", 0.98, 1);
 	}
 }
 
@@ -2401,6 +2411,21 @@ void mvs_led_state::neoext(machine_config &config)
 {
 	neo4s(config);
 	m_ms_comm_layout = 1;
+}
+
+// Oro: hack sets with cmc50-encrypted C ROMs using non-official keys (0x50/0x42)
+void mvs_led_state::kof2000s_oro(machine_config &config)
+{
+	m_ms_regular_sprites = true;
+	mv1_fixed(config);
+	cartslot_fixed(config, "cmc50_kof2000s");
+}
+
+void mvs_led_state::kof2001s_oro(machine_config &config)
+{
+	m_ms_regular_sprites = true;
+	mv1_fixed(config);
+	cartslot_fixed(config, "cmc50_kof2001s");
 }
 
 
@@ -14025,7 +14050,7 @@ GAME( 1999, kof99ext,   kof99,    neobase_oro,   neogeo,    mvs_led_state, empty
 GAME( 1999, kof99p9ca,  kof99,    neobase_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "SNK", "The King of Fighters '99 (P9_CA)", MACHINE_SUPPORTS_SAVE )
 GAME( 1999, kof99ae,    kof99,    neobase_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "SNK", "The King of Fighters '99 - Adventurous Edition", MACHINE_SUPPORTS_SAVE )
 GAME( 2000, kof2kps2,   kof2000,  neobase_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "SNK", "The King of Fighters 2000 (PlayStation Ver)", MACHINE_SUPPORTS_SAVE )
-GAME( 2001, kf2k1ae,    kof2001,  kof2001,   neogeo,    mvs_led_state, empty_init, ROT0, "Eolith / SNK", "The King of Fighters 2001 AE", MACHINE_SUPPORTS_SAVE )
+GAME( 2001, kf2k1ae,    kof2001,  kof2001s_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "Eolith / SNK", "The King of Fighters 2001 AE", MACHINE_SUPPORTS_SAVE )
 GAME( 2001, kf2k1ar,    kof2001,  neobase_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "Eolith / SNK", "The King of Fighters 2001 All Rugal", MACHINE_SUPPORTS_SAVE )
 GAME( 2002, kof2k2nd,   kof2002,  neobase_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "Eolith / Playmore", "The King of Fighters 2002 (NGM-2650)(NGH-2650) (decrypted P, decrypted C)", MACHINE_SUPPORTS_SAVE )
 GAME( 2002, kf2k2ext,   kof2002,  neobase_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "Eolith / Playmore", "The King of Fighters 2002 (NGM-2650)(NGH-2650) (Extended Capacity)", MACHINE_SUPPORTS_SAVE )
@@ -14037,8 +14062,8 @@ GAME( 2018, kf2k2ps2re, kof2002,  neo4s,     neogeo,    mvs_led_state, empty_ini
 GAME( 2019, kof2k2p7,   kof2002,  neo4s,     neogeo,    mvs_led_state, empty_init, ROT0, "hack", "The King of Fighters 2002 (PLUS 2017 Ver 2.0,GSC2007 hack)", MACHINE_SUPPORTS_SAVE )
 GAME( 2018, kofallmixs, kof2002,  neo4s,     neogeo,    mvs_led_state, empty_init, ROT0, "hack", "The King Of Fighters 2002 (All Mix Edition ver 1.0, EGCG&GSC2007 hack)", MACHINE_SUPPORTS_SAVE )
 GAME( 2017, doubledrsp, doubledr, neobase_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "Technos Japan", "Double Dragon (Neo-Geo) Special 2017", MACHINE_SUPPORTS_SAVE ) // GSC2007 ADD
-GAME( 2000, kof2000s,   kof2000,  kof2000,   neogeo,    mvs_led_state, empty_init, ROT0, "SNK", "The King of Fighters 2000 (YouJu)", MACHINE_SUPPORTS_SAVE )
-GAME( 2001, kof2001s,   kof2001,  kof2001,   neogeo,    mvs_led_state, empty_init, ROT0, "Eolith / SNK", "The King of Fighters 2001 (NGM-2621)(YouJu)", MACHINE_SUPPORTS_SAVE )
+GAME( 2000, kof2000s,   kof2000,  kof2000s_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "SNK", "The King of Fighters 2000 (YouJu)", MACHINE_SUPPORTS_SAVE )
+GAME( 2001, kof2001s,   kof2001,  kof2001s_oro,   neogeo,    mvs_led_state, empty_init, ROT0, "Eolith / SNK", "The King of Fighters 2001 (NGM-2621)(YouJu)", MACHINE_SUPPORTS_SAVE )
 // Last Hope Pink Bullets (c)2008 - MVS/AES
 // Fast Striker (c)2010 - MVS/AES
 // Fast Striker 1.5 (c)2010 - MVS/AES

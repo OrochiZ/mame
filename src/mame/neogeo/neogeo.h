@@ -255,6 +255,7 @@ private:
 
 	required_device<input_merger_device> m_audionmi;
 
+protected:
 	// Oro: extra audio units for hack boards (dual/quad sound)
 	optional_device<cpu_device> m_audiocpu2;
 	optional_device<ym2610_device> m_ymsnd2;

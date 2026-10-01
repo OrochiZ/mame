@@ -725,11 +725,12 @@ void mame_ui_manager::display_startup_screens(bool first_time)
 			}
 			break;
 
-		case 1:
-			if (show_warnings)
-			{
-				bool need_warning = machine_info().has_warnings();
-				if (machine_info().has_severe_warnings() || !machine_info().has_warnings())
+			case 1:
+				if (show_warnings)
+				{
+					//Oro bool need_warning = machine_info().has_warnings();
+					bool need_warning = false; // Oro: never show the in-window warning page
+					if (machine_info().has_severe_warnings() || !machine_info().has_warnings())
 				{
 					// critical warnings - no need to persist stuff
 					m_unemulated_features.clear();
