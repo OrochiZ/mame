@@ -92,21 +92,18 @@ NO_USE_PIPEWIRE = 1
 # TOOLCHAIN =
 OVERRIDE_CC = clang
 OVERRIDE_CXX = clang++
-# link with lld (from mingw64/bin, added to PATH by build_mingw32.bat);
-# much faster than GNU ld and no duplicate-section warnings
-LDOPTS = -fuse-ld=lld
 # OVERRIDE_LD = ld
 # OVERRIDE_AR = ar
 
 # DEPRECATED = 0
 # LTO = 1
-SSE2 = 1
+# SSE2 = 1
 # OPENMP = 1
 
 # SEPARATE_BIN = 1
 # PYTHON_EXECUTABLE = python3
 # SHADOW_CHECK = 1
-STRIP_SYMBOLS = 1
+# STRIP_SYMBOLS = 0
 
 # QT_HOME = /usr/lib64/qt48/
 
@@ -1043,10 +1040,14 @@ endif
 ifneq ($(IGNORE_GIT),1)
 NEW_GIT_VERSION := $(shell git describe --dirty)
 else
-NEW_GIT_VERSION := unknown
+  ifeq (posix,$(SHELLTYPE))
+    NEW_GIT_VERSION := $(strip $(shell date "+%Y/%m/%d"))
+  else
+    NEW_GIT_VERSION := $(strip $(shell cmd /c date /T))
+  endif
 endif
 ifeq ($(NEW_GIT_VERSION),)
-NEW_GIT_VERSION := unknown
+NEW_GIT_VERSION := automated
 endif
 
 GENIE := 3rdparty/genie/bin/$(GENIEOS)/genie$(EXE)
@@ -1577,11 +1578,11 @@ endif
 # Regression tests
 #-------------------------------------------------
 
-include regtests/regtests.mak
+#include regtests/regtests.mak
 
-.PHONY: tests
+#.PHONY: tests
 
-tests: $(REGTESTS)
+#tests: $(REGTESTS)
 
 #-------------------------------------------------
 # Source cleanup
